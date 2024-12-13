@@ -1,0 +1,39 @@
+{{> header}}
+<section style="padding: 2rem 1.25rem;">
+    <h2 style="font-size: 24px;">
+        {{title}}
+    </h2>
+
+    <p style="margin-top: 0.5rem;">
+        Hello {{name}}!
+    </p>
+
+    <p style="margin-top: 2rem;">
+        {{label}}! The trade will automatically cancel in {{duration}} minutes if no
+        action is taken.
+    </p>
+
+    <p style="margin-top: 2rem;">{{comment}} Here's the trade summary:</p>
+
+    <ul style="padding: 0rem 1.25rem; margin-top: 0.5rem;">
+        <li>
+            <span><strong>Crypto:</strong> {{crypto}} </span>
+        </li>
+        <li style="margin-top: 0.2rem;">
+            <span><strong>Amount:</strong> {{amount}} </span>
+        </li>
+        <li style="margin-top: 0.2rem;">
+            <span><strong>Payment method:</strong> {{paymentMethod}} </span>
+        </li>
+        <li style="margin-top: 0.2rem;">
+            <span><strong>Rate:</strong> {{rate}} </span>
+        </li>
+    </ul>
+
+    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Click below to view the trade details and start your secure
+        transaction!</h3>
+
+    <a href={{url}}>View trade</a>
+
+</section>
+{{> footer}}

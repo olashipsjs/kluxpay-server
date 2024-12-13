@@ -1,0 +1,38 @@
+{{> header}}
+<section style="padding: 2rem 1.25rem;">
+    <h2 style="font-size: 24px;">
+        {{title}}
+    </h2>
+
+    <p style="margin-top: 0.5rem;">
+        Hello {{name}}!
+    </p>
+
+    <p style="margin-top: 2rem;">
+        Congratulations! Your recent P2P trade with {{trader}} has been successfully completed.
+    </p>
+
+    <p style="margin-top: 2rem;">{{comment}} Here's the trade summary:</p>
+
+    <ul style="padding: 0rem 1.25rem; margin-top: 0.5rem;">
+        <li>
+            <span><strong>Trade ID:</strong> {{tradeId}} </span>
+        </li>
+        <li style="margin-top: 0.2rem;">
+            <span><strong>Asset traded:</strong> {{asset}} </span>
+        </li>
+        <li style="margin-top: 0.2rem;">
+            <span><strong>Amount:</strong> {{amount}} {{asset}} </span>
+        </li>
+    </ul>
+
+    <p style="margin-top: 2rem;">Thank you for choosing {{platform}} for your crypto trading
+        needs. We’re committed to ensuring a safe and seamless trading experience.</p>
+
+    <p style="margin-top: 2rem; margin-bottom: 1rem;">Help us build a trusted community! Rate your experience with
+        {{trader}}. Leave feedback now!</p>
+
+    <a href={{url}}>Leave feedback</a>
+
+</section>
+{{> footer}}

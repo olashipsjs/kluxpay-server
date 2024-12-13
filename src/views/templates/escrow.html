@@ -1,0 +1,48 @@
+{{> header}}
+<section style="padding: 2rem 1.25rem;">
+    <h2 style="font-size: 24px;">
+        {{title}}
+    </h2>
+
+    <p style="margin-top: 0.5rem;">
+        Hello {{name}}!
+    </p>
+
+    <p style="margin-top: 2rem;">
+        Your escrow for the P2P trade has been successfully locked. Please review the trade details below:
+    </p>
+
+    <p style="margin-top: 2rem;">Your escrow for the P2P trade has been successfully locked. Please review the trade
+        details below:</p>
+
+    <ul style="padding: 0rem 1.25rem; margin-top: 0.5rem;">
+        <li>
+            <span><strong>Trade ID:</strong> {{tradeId}}</span>
+        </li>
+        <li>
+            <span><strong>Buyer:</strong> {{buyer}}</span>
+        </li>
+        <li>
+            <span><strong>Asset:</strong> {{asset}}</span>
+        </li>
+        <li>
+            <span><strong>Amount in escrow:</strong> {{amount}} {{asset}}</span>
+        </li>
+    </ul>
+
+    <p style="margin-top: 2rem;">The escrow ensures secure trade and protects both parties. Please follow these
+        steps to complete the transaction:</p>
+
+    <ul style="padding: 0rem 1.25rem; margin-top: 0.5rem;">
+        <li>
+            <span>Confirm receipt of funds from the counterparty.</span>
+        </li>
+        <li style="margin-top: 0.2rem;">
+            <span>Release the escrow upon confirmation.</span>
+        </li>
+    </ul>
+
+    <p style="margin-top: 2rem;">Thank you for trading securely with {{platform}}.</p>
+
+</section>
+{{> footer}}

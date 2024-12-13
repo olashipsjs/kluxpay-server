@@ -36,6 +36,7 @@
   },
   "scripts": {
     "compile": "tsc",
+    "build": "tsc && bun run copy:views && bun run tailwind",
     "dev": "nodemon && bun run copy:views && bun run tailwind",
     "copy:views": "cpx \"src/views/**/*.{html,jpg,png}\" dist/views",
     "tailwind": "npx tailwindcss -i ./src/views/css/tailwind.css -o ./dist/views/css/tailwind.css --minify"

@@ -8,20 +8,20 @@ const offerDef = `#graphql
         fiat: String!
         timeout: Int!
         notes: String!
-        amount: String!
-        minLimit: String!
-        maxLimit: String!
+        amount: Int!
+        minLimit: Int!
+        maxLimit: Int!
         createdBy: User!
         payment: Payment!
         isActive: Boolean!
     }
 
     type GetOffers {
+        page: Int!
         total: Int!
         limit: Int!
-        page: Int!
-        assets: [String!]!
         offers: [Offer!]
+        assets: [String!]!
     }
 
     input GetOffersPayload {
@@ -32,9 +32,9 @@ const offerDef = `#graphql
     }
 
     type Query {
-        getOffers (payload: GetOffersPayload): GetOffers!
-        getOffer(id: ID!): Offer!
         getUserOffers: [Offer!]
+        getOffer(id: ID!): Offer!
+        getOffers (payload: GetOffersPayload): GetOffers!
     }
     
 
@@ -45,10 +45,10 @@ const offerDef = `#graphql
         timeout: Int!
         payment: ID!
         notes: String!
-        amount: String!
-        maxLimit: String!
-        minLimit: String!
-        priceMargin: String!
+        amount: Int!
+        maxLimit: Int!
+        minLimit: Int!
+        priceMargin: Int!
     }
 
     input UpdateOfferPayload {
@@ -58,15 +58,21 @@ const offerDef = `#graphql
         fiat: String
         timeout: Int
         notes: String
-        amount: String
-        maxLimit: String
-        minLimit: String
+        amount: Int
+        maxLimit: Int
+        minLimit: Int
         payment: ID
         isActive: Boolean
     }
 
+    input ActivateOfferPayload {
+        tokenAddress: String!
+        
+    }
+
 
     type Mutation {
+        activateOffer(id: ID!): Offer!
         deleteOffer(id: ID!): Offer!
         createOffer(payload: CreateOfferPayload!): Offer!
         updateOffer(id: ID!, payload: UpdateOfferPayload!): Offer!

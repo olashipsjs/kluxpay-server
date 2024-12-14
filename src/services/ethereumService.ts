@@ -43,7 +43,7 @@ const ethereumService = {
         throw new Error('Invalid wallet address');
       }
 
-      let balance;
+      let balance = 0;
 
       if (tokenAddress) {
         if (!ethers.isAddress(tokenAddress)) {
@@ -51,23 +51,21 @@ const ethereumService = {
         }
 
         const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
-
         const decimals = await contract.decimals();
+
         const formattedDecimals = Number(decimals);
 
-        balance = await contract.balanceOf(walletAddress);
+        const balanceOf = await contract.balanceOf(walletAddress);
 
-        const formattedBalance = parseFloat(
-          ethers.formatUnits(balance, formattedDecimals)
-        );
+        balance = parseFloat(ethers.formatUnits(balanceOf, formattedDecimals));
 
-        return formattedBalance;
-      } else {
-        balance = await provider.getBalance(walletAddress);
-
-        const formattedBalance = parseFloat(ethers.formatEther(balance));
-        return formattedBalance;
+        return balance;
       }
+
+      const bigIntBalance = await provider.getBalance(walletAddress);
+      balance = parseFloat(ethers.formatEther(bigIntBalance));
+
+      return balance;
     } catch (error) {
       console.error('Error fetching balance:', error);
       throw new Error((error as Error).message);

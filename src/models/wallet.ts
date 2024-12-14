@@ -7,7 +7,7 @@ export type WalletType = {
   privateKey: string;
   _id: Types.ObjectId;
   user: Types.ObjectId;
-  platform: 'ethereum' | 'solana' | 'bitcoin'; // 'ethereum', 'solana', 'binance-smart-chain', 'bitcoin', etc.
+  platform: 'ethereum' | 'bitcoin'; // 'ethereum', 'solana', 'binance-smart-chain', 'bitcoin', etc.
 };
 
 const schema = new Schema<WalletType>({
@@ -17,7 +17,7 @@ const schema = new Schema<WalletType>({
   platform: {
     type: String,
     required: true,
-    enum: ['ethereum', 'solana', 'bitcoin'],
+    enum: ['ethereum', 'bitcoin'],
     lowercase: true,
   },
   balance: { type: String, default: '0.00' },

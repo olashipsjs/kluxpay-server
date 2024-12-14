@@ -210,8 +210,6 @@ const authResolver = {
           throw new Error('Unable to change user password.');
         }
 
-        // await mail.send({ recipient: updatedUser.email, template: password() });
-
         return { isSuccess: true };
       } catch (error) {
         console.log(`Unable to complete request: ${(error as Error).message}`);
@@ -255,8 +253,6 @@ const authResolver = {
         if (!updatedUser) {
           throw new Error('Unable to reset user password. Try again later.');
         }
-
-        // await mail.send({ recipient: updatedUser.email, template: password() });
 
         return { isSuccess: true };
       } catch (error) {

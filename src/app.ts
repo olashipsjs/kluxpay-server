@@ -47,14 +47,16 @@ import render from './libs/render';
 
 // config
 import connectDB from './config/db';
+import offerDeactivation from './crons/offerDeactivation';
 
 const app = express();
 
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CLIENT_URI,
+    origin: '*',
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   })
 );
 app.use(cookies());
@@ -134,27 +136,16 @@ const startServer = async () => {
       })
     );
 
-    // await mail.send({
-    //   recipients: 'devbylanre@gmail.com',
-    //   subject: 'Your Trade is Secured in Escrow',
-    //   html: render('escrow', {
-    //     amount: 125,
-    //     asset: 'USDT',
-    //     platform: 'Kluxpay',
-    //     name: 'yuri markov',
-    //     buyer: 'james hugg',
-    //     tradeId: '83shy5228',
-    //     title: 'Escrow Lock',
-    //   }),
-    // });
-
     const PORT = process.env.PORT || 5500;
 
     app.listen(PORT, async () => {
       console.log('🚀 Server is up and running at: ', PORT);
 
       // update wallet balance every 60 seconds
-      await updateBalance();
+      setInterval(() => {
+        updateBalance();
+        offerDeactivation();
+      }, 6000);
     });
   } catch (error) {
     console.error('Failed to start server:', (error as Error).message);

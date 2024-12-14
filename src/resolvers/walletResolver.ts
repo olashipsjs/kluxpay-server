@@ -1,9 +1,7 @@
 import { ethers } from 'ethers';
 import User from '../models/user';
-import Wallet, { WalletType } from '../models/wallet';
-import bitcoinService from '../services/bitcoinService';
+import Wallet from '../models/wallet';
 import ethereumService from '../services/ethereumService';
-import solanaService from '../services/solanaService';
 import aws256gsm from '../utils/aws256gsm';
 import bearerAuthorization from '../middlewares/bearerAuthorization';
 
@@ -155,9 +153,6 @@ const walletResolver = {
               keys = await ethereumService.createWallet();
               break;
 
-            case 'bitcoin':
-              keys = bitcoinService.createWallet();
-              break;
             default:
               throw new Error('Unsupported coin platform: ' + platform);
           }

@@ -2,6 +2,8 @@ import bearerAuthorization from '../middlewares/bearerAuthorization';
 import Offer, { OfferDocument } from '../models/offer';
 import Payment from '../models/payment';
 import User from '../models/user';
+import Wallet from '../models/wallet';
+import ethereumService from '../services/ethereumService';
 
 const offerResolver = {
   Query: {
@@ -126,6 +128,55 @@ const offerResolver = {
   },
 
   Mutation: {
+    activateOffer: async (_: any, { payload }: any) => {
+      try {
+        const offer = await Offer.findById(payload.id).populate('createdBy');
+
+        if (!offer) {
+          throw new Error('Offer not found');
+        }
+
+        const createdBy = offer.createdBy;
+
+        const wallet = await Wallet.findOne({
+          platform: payload.platform,
+          user: createdBy._id,
+        });
+
+        if (!wallet) throw new Error('Wallet not found');
+
+        let balance: undefined | number = undefined;
+
+        switch (wallet.platform) {
+          case 'ethereum':
+            balance = await ethereumService.getAssetBalance({
+              tokenAddress: payload.tokenAddress,
+              walletAddress: wallet.publicKey,
+            });
+            break;
+
+          default:
+            throw new Error('Invalid blockchain platform');
+        }
+
+        if (!balance) {
+          throw new Error('Error fetching asset balance');
+        }
+
+        if (balance < Number(offer.amount)) {
+          throw new Error('Insufficient balance');
+        }
+
+        offer.isActive = true;
+        await offer.save();
+
+        return offer;
+      } catch (error) {
+        console.log((error as Error).message);
+        throw new Error((error as Error).message);
+      }
+    },
+
     createOffer: async (
       _: any,
       { payload }: { payload: Omit<OfferDocument, '_id'> },

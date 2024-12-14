@@ -60,11 +60,10 @@ const otpResolver = {
 
         if (!user) {
           throw new Error(
-            'Sorry, we couldn’t locate the user you’re searching for. Please check the details and try again.'
+            'Sorry, we couldn’t locate the user account. Please check the details and try again.'
           );
         }
 
-        // find existing otp and delete if found
         const existingOtp = await Otp.findOne({ createdBy: user._id });
         let record: any;
 

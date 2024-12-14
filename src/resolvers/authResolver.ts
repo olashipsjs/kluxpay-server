@@ -97,24 +97,17 @@ const authResolver = {
       }
     },
 
-    verifyEmail: async (
-      _: any,
-      { payload }: { payload: { email: string } }
-    ) => {
+    verifyEmail: async (_: any, __: any, { req }: any) => {
       try {
-        const user = await User.findOneAndUpdate({
-          email: payload.email,
+        const { id } = await bearerAuthorization(req);
+
+        const user = await User.findByIdAndUpdate(id, {
           isEmailVerified: true,
         });
 
         if (!user) {
           throw new Error('Unable to verify user email address.');
         }
-
-        // mail.send({
-        //   recipient: user.email,
-        //   template: await renderTemplate('email'),
-        // });
 
         return { isSuccess: true };
       } catch (error) {

@@ -52,11 +52,18 @@ import offerDeactivation from './crons/offerDeactivation';
 const app = express();
 
 app.use(express.json());
+const allowedOrigins = ['http://localhost:5173', 'https://kluxpay.com'];
+
 app.use(
   cors({
-    origin: '*',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true, // Necessary if you want to send cookies/auth headers
   })
 );
 app.use(cookies());

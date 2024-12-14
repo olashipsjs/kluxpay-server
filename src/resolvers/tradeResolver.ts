@@ -89,6 +89,15 @@ const tradeResolver = {
     ) => {
       try {
         const { id } = await bearerAuthorization(req);
+        const user = await User.findById(id);
+
+        if (!user) {
+          throw new Error('Authorized request.');
+        }
+
+        if (!user.isEmailVerified) {
+          throw new Error('Only verified users are allowed to post offers.');
+        }
 
         const trade = new Trade({ createdBy: id, ...payload });
         await trade.save();

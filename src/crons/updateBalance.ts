@@ -1,7 +1,5 @@
-import { ethers } from 'ethers';
 import Wallet from '../models/wallet';
 import ethereumService from '../services/ethereumService';
-import solanaService from '../services/solanaService';
 
 const updateBalance = async () => {
   try {
@@ -15,10 +13,6 @@ const updateBalance = async () => {
           balance = await ethereumService.getAssetBalance({
             walletAddress: wallet.publicKey,
           });
-          break;
-
-        case 'solana':
-          balance = await solanaService.getBalance(wallet.publicKey);
           break;
 
         default:

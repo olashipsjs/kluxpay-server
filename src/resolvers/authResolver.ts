@@ -24,7 +24,7 @@ const authResolver = {
         const accessToken = jwt.sign(
           { id: user._id },
           process.env.ACCESS_TOKEN_KEY || '',
-          { expiresIn: '1h' }
+          { expiresIn: 60 * 5 }
         );
 
         return { accessToken };

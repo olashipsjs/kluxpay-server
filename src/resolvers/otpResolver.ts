@@ -104,10 +104,11 @@ const otpResolver = {
           );
         }
 
-        // find and delete the otp using given code and found user id and
+        console.log({ code: payload.code });
+
         const otp = await Otp.findOne({
           code: payload.code,
-          createdBy: user._id.toString(),
+          createdBy: user._id,
         });
 
         if (!otp) {
@@ -122,9 +123,9 @@ const otpResolver = {
           throw new Error('Your OTP has expired. Please request a new one.');
         }
 
-        const deletedOtp = await Otp.findByIdAndDelete(otp._id);
+        await Otp.deleteOne({ _id: otp._id });
 
-        return deletedOtp;
+        return { isSuccess: true };
       } catch (error) {
         console.log(error);
         throw new Error((error as Error).message);

@@ -25,8 +25,8 @@ const otpDef = `#graphql
     }
 
     type Mutation {
+        verifyOtp(payload: VerifyOtpPayload!): JSON
         generateOtp(payload: GenerateOtpPayload!): Otp!
-        verifyOtp(payload: VerifyOtpPayload!): Otp!
     }
 `;
 

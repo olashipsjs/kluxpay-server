@@ -36,18 +36,17 @@ import paymentResolver from './resolvers/paymentResolver';
 import referralResolver from './resolvers/referralResolver';
 
 // middlewares
-import loggerMiddleware from './middlewares/loggerMiddleware';
 import rateLimitMiddleware from './middlewares/rateLimitMiddleware';
 
 // crons
 import updateBalance from './crons/updateBalance';
+import offerDeactivation from './crons/offerDeactivation';
 
 // libraries
 import render from './libs/render';
 
 // config
 import connectDB from './config/db';
-import offerDeactivation from './crons/offerDeactivation';
 
 const app = express();
 
@@ -152,7 +151,7 @@ const startServer = async () => {
       setInterval(() => {
         updateBalance();
         offerDeactivation();
-      }, 6000);
+      }, 6 * 1000 * 5);
     });
   } catch (error) {
     console.error('Failed to start server:', (error as Error).message);

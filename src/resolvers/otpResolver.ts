@@ -107,7 +107,7 @@ const otpResolver = {
         // find and delete the otp using given code and found user id and
         const otp = await Otp.findOne({
           code: payload.code,
-          createdBy: user._id,
+          createdBy: user._id.toString(),
         });
 
         if (!otp) {

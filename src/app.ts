@@ -62,7 +62,7 @@ app.use(
         callback(new Error('Not allowed by CORS'));
       }
     },
-    credentials: true, // Necessary if you want to send cookies/auth headers
+    credentials: true,
   })
 );
 app.use(cookies());

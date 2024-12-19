@@ -64,6 +64,34 @@ const walletResolver = {
       }
     },
 
+    getBalance: async (_: any, __: any, { req }: any) => {
+      try {
+        const { id } = await bearerAuthorization(req);
+
+        const wallets = await Wallet.find({ createdBy: id });
+
+        let balance = 0;
+
+        for (const wallet of wallets) {
+          switch (wallet.platform) {
+            case 'ethereum':
+              const ethBalance = await ethereumService.getAssetBalance({
+                walletAddress: wallet.publicKey,
+              });
+
+              if (ethBalance) {
+                balance += ethBalance;
+              }
+          }
+        }
+
+        return { wallets, balance, totalWallets: wallets.length };
+      } catch (error) {
+        console.log(error);
+        throw new Error((error as Error).message);
+      }
+    },
+
     getAssetBalance: async (
       _: any,
       {

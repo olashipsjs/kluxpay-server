@@ -51,12 +51,17 @@ import connectDB from './config/db';
 const app = express();
 
 app.use(express.json());
+
 const allowedOrigins = ['http://localhost:5173', 'https://kluxpay.com'];
+
+app.set('trust proxy', 1);
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      console.log('Request origin:', origin);
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -65,6 +70,9 @@ app.use(
     credentials: true,
   })
 );
+
+app.options('*', cors());
+
 app.use(cookies());
 
 app.use('/assets', express.static(path.join(__dirname, 'views/assets')));
@@ -73,13 +81,7 @@ app.get('/views/:template', async (req, res) => {
   const { template } = req.params;
 
   try {
-    const html = render(template, {
-      name: 'yuri markov',
-      platform: 'Kluxpay',
-      trader: 'james hugg',
-      title: 'Trade cancelled',
-      url: 'https://facebook.com/',
-    });
+    const html = render(template);
     res.send(html);
   } catch (error) {
     console.error(error);

@@ -89,14 +89,20 @@ const tradeResolver = {
     ) => {
       try {
         const { id } = await bearerAuthorization(req);
-        const user = await User.findById(id);
 
-        if (!user) {
-          throw new Error('Authorized request.');
+        const user = await User.findById(id);
+        const offer = await Offer.findById(payload.offer);
+
+        if (!user || !offer) {
+          throw new Error('Unable to complete request');
         }
 
         if (!user.isEmailVerified) {
           throw new Error('Only verified users are allowed to post offers.');
+        }
+
+        if (user._id === offer.createdBy) {
+          throw new Error('You cannot trade with yourself.');
         }
 
         const trade = new Trade({ createdBy: id, ...payload });

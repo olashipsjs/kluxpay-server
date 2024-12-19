@@ -52,7 +52,7 @@ const app = express();
 
 app.use(express.json());
 
-const allowedOrigins = ['http://localhost:5173', 'https://kluxpay.com'];
+const allowedOrigins = ['http://localhost:5173', 'https://www.kluxpay.com'];
 
 app.set('trust proxy', 1);
 

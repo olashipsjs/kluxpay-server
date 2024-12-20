@@ -24,7 +24,6 @@ const walletDef = `#graphql
     type Query {
         getWallets: [Wallet]
         getUserWallets: [Wallet]
-        getBalance: JSON
         getWallet(platform: String!): Wallet
         getAssetBalance(payload: GetAssetBalancePayload!): JSON
     }

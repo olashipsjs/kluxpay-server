@@ -54,8 +54,6 @@ app.use(express.json());
 
 const allowedOrigins = ['http://localhost:5173', 'https://www.kluxpay.com'];
 
-app.set('trust proxy', 1);
-
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -64,14 +62,12 @@ app.use(
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error('Blocked by CORS'));
       }
     },
     credentials: true,
   })
 );
-
-app.options('*', cors());
 
 app.use(cookies());
 
@@ -149,11 +145,11 @@ const startServer = async () => {
     app.listen(PORT, async () => {
       console.log('🚀 Server is up and running at: ', PORT);
 
-      // update wallet balance every 60 seconds
+      // update wallet balance every 5 minutes
       setInterval(() => {
         updateBalance();
         offerDeactivation();
-      }, 6 * 1000 * 5);
+      }, 60 * 1000 * 5);
     });
   } catch (error) {
     console.error('Failed to start server:', (error as Error).message);

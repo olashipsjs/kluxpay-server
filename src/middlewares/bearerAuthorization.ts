@@ -8,7 +8,7 @@ const bearerAuthorization = async (req: Props, debug: boolean = false) => {
   const authorization = req.headers.authorization;
 
   if (debug) {
-    console.log({ authorization, headers: req.headers });
+    console.log({ authorization });
   }
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
@@ -25,9 +25,7 @@ const bearerAuthorization = async (req: Props, debug: boolean = false) => {
     const user = await User.findById(decoded.id);
 
     if (!user) {
-      throw new Error(
-        'Unauthorized request due to invalid or expired authorization token'
-      );
+      throw new Error('Unauthorized request. Account does not exist.');
     }
 
     (req as any).user = { id: user._id };

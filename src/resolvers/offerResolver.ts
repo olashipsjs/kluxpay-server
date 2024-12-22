@@ -1,3 +1,4 @@
+import p2pContracts from '../constants/p2pContracts';
 import bearerAuthorization from '../middlewares/bearerAuthorization';
 import Offer, { OfferDocument } from '../models/offer';
 import Payment from '../models/payment';
@@ -9,7 +10,7 @@ const offerResolver = {
   Query: {
     getOffer: async (_: any, { id }: { id: string }) => {
       try {
-        const offer = await Offer.findById(id);
+        const offer = await Offer.findOne({ _id: id });
 
         if (!offer) {
           throw new Error('Unable to find offer');
@@ -128,47 +129,47 @@ const offerResolver = {
   },
 
   Mutation: {
-    activateOffer: async (_: any, { payload }: any) => {
+    activateOffer: async (_: any, { id }: any) => {
       try {
-        const offer = await Offer.findById(payload.id).populate('createdBy');
+        const offer = await Offer.findById(id).populate('createdBy');
 
         if (!offer) {
           throw new Error('Offer not found');
         }
 
-        const createdBy = offer.createdBy;
+        for (const contract of p2pContracts) {
+          const wallet = await Wallet.findOne({
+            platform: contract.platform,
+            user: offer.createdBy._id,
+          });
 
-        const wallet = await Wallet.findOne({
-          platform: payload.platform,
-          user: createdBy._id,
-        });
+          if (wallet) {
+            let balance: undefined | number = undefined;
 
-        if (!wallet) throw new Error('Wallet not found');
+            switch (wallet.platform) {
+              case 'ethereum':
+                balance = await ethereumService.getAssetBalance({
+                  tokenAddress: contract.address,
+                  walletAddress: wallet.publicKey,
+                });
+                break;
 
-        let balance: undefined | number = undefined;
+              default:
+                throw new Error('Invalid blockchain platform');
+            }
 
-        switch (wallet.platform) {
-          case 'ethereum':
-            balance = await ethereumService.getAssetBalance({
-              tokenAddress: payload.tokenAddress,
-              walletAddress: wallet.publicKey,
-            });
-            break;
+            if (balance === undefined) {
+              throw new Error('Error fetching asset balance');
+            }
 
-          default:
-            throw new Error('Invalid blockchain platform');
+            if (balance < offer.amount) {
+              throw new Error('Insufficient balance');
+            }
+
+            offer.isActive = true;
+            await offer.save();
+          }
         }
-
-        if (!balance) {
-          throw new Error('Error fetching asset balance');
-        }
-
-        if (balance < Number(offer.amount)) {
-          throw new Error('Insufficient balance');
-        }
-
-        offer.isActive = true;
-        await offer.save();
 
         return offer;
       } catch (error) {

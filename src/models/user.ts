@@ -10,6 +10,7 @@ export type UserType = Document & {
   isOnline: boolean;
   isLocked: boolean;
   isVerified: boolean;
+  currency: string;
   isEmailVerified: boolean;
   referralCode: string;
   role: 'admin' | 'owner' | 'moderator' | 'trader' | 'developer';
@@ -29,6 +30,7 @@ const schema = new Schema<UserType>(
     dateOfBirth: { type: String, required: true },
     isVerified: { type: Boolean, default: false },
     isEmailVerified: { type: Boolean, default: false },
+    currency: { type: String, required: true, default: 'usd' },
     lastName: { type: String, required: true, lowercase: true },
     firstName: { type: String, required: true, lowercase: true },
     referralCode: { type: String, required: true, unique: true, default: '' },

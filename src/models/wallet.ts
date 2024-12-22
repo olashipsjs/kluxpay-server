@@ -1,8 +1,8 @@
 import { model, Schema, Types } from 'mongoose';
 
 export type WalletType = {
-  escrow: string;
-  balance: string;
+  escrow: number;
+  balance: number;
   publicKey: string;
   privateKey: string;
   _id: Types.ObjectId;
@@ -11,7 +11,7 @@ export type WalletType = {
 };
 
 const schema = new Schema<WalletType>({
-  escrow: { type: String, required: true, default: '0.00' },
+  escrow: { type: Number, required: true, default: 0 },
   publicKey: { type: String, required: true, unique: true },
   privateKey: { type: String, required: true, unique: true },
   platform: {
@@ -20,7 +20,7 @@ const schema = new Schema<WalletType>({
     enum: ['ethereum', 'bitcoin'],
     lowercase: true,
   },
-  balance: { type: String, default: '0.00' },
+  balance: { type: Number, default: 0 },
   user: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
 });
 

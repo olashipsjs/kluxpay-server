@@ -6,30 +6,38 @@ import bearerAuthorization from '../middlewares/bearerAuthorization';
 
 const authResolver = {
   Query: {
-    refreshAccessToken: async (_: any, { payload }: { payload: any }) => {
+    refreshAccessToken: async (_: any, __: any, { req }: any) => {
       try {
-        const decoded = jwt.verify(
-          payload.accessToken,
-          process.env.ACCESS_TOKEN_KEY!
-        ) as {
-          id: string;
-        };
+        const cookieRefreshToken = req.cookies?.refreshToken;
 
-        const user = await User.findById(decoded.id);
-
-        if (!user) {
-          throw new Error('Error performing request. Try again later.');
+        if (!cookieRefreshToken) {
+          throw new Error('Invalid request. Token not set.');
         }
 
-        const accessToken = jwt.sign(
-          { id: user._id },
-          process.env.ACCESS_TOKEN_KEY || '',
+        const refreshTokenPayload = jwt.verify(
+          cookieRefreshToken,
+          process.env.REFRESH_TOKEN_KEY!
+        ) as { id: string };
+
+        if (!refreshTokenPayload || !refreshTokenPayload.id) {
+          throw new Error('Session expired. Please sign in again.');
+        }
+
+        const user = await User.findById(refreshTokenPayload.id);
+
+        if (!user) {
+          throw new Error('Invalid request. Please try again.');
+        }
+
+        const newAccessToken = jwt.sign(
+          { id: user.id },
+          process.env.ACCESS_TOKEN_KEY!,
           { expiresIn: '15m' }
         );
 
-        return { accessToken };
+        return { accessToken: newAccessToken };
       } catch (error) {
-        console.log(error);
+        console.error('Refresh token error:', error);
         throw new Error((error as Error).message);
       }
     },
@@ -135,7 +143,13 @@ const authResolver = {
         const isPreviousEmail = existingUser.email === payload.newEmail;
 
         if (isPreviousEmail) {
-          throw new Error('You cannot use the same email address twice.');
+          throw new Error('You cannot use your current email address twice.');
+        }
+
+        const anotherUser = await User.findOne({ email: payload.newEmail });
+
+        if (anotherUser) {
+          throw new Error('Email already associated with another user');
         }
 
         const updatedUser = await User.findByIdAndUpdate(

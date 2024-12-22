@@ -2,15 +2,15 @@ const offerDef = `#graphql
 
     type Offer {
         _id: ID!
-        priceMargin: Int!
+        priceMargin: Float!
         type: String!
         coinId: String!
         fiat: String!
         timeout: Int!
         notes: String!
-        amount: Int!
-        minLimit: Int!
-        maxLimit: Int!
+        amount: Float!
+        minLimit: Float!
+        maxLimit: Float!
         createdBy: User!
         payment: Payment!
         isActive: Boolean!
@@ -45,35 +45,30 @@ const offerDef = `#graphql
         timeout: Int!
         payment: ID!
         notes: String!
-        amount: Int!
-        maxLimit: Int!
-        minLimit: Int!
-        priceMargin: Int!
+        amount: Float!
+        maxLimit: Float!
+        minLimit: Float!
+        priceMargin: Float!
     }
 
     input UpdateOfferPayload {
-        type: String!
-        priceMargin: Int
+        type: String
+        priceMargin: Float
         coinId: String
         fiat: String
         timeout: Int
         notes: String
-        amount: Int
-        maxLimit: Int
-        minLimit: Int
+        amount: Float
+        maxLimit: Float
+        minLimit: Float
         payment: ID
         isActive: Boolean
     }
 
-    input ActivateOfferPayload {
-        tokenAddress: String!
-        
-    }
-
 
     type Mutation {
-        activateOffer(id: ID!): Offer!
         deleteOffer(id: ID!): Offer!
+        activateOffer(id: ID!): Offer!
         createOffer(payload: CreateOfferPayload!): Offer!
         updateOffer(id: ID!, payload: UpdateOfferPayload!): Offer!
     }

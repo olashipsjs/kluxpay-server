@@ -32,12 +32,10 @@ const authTyDef = `#graphql
         password: String!
     }
 
-    input RefreshAccessTokenPayload {
-        accessToken: String!
-    }
+
 
     type Query {
-        refreshAccessToken(payload: RefreshAccessTokenPayload!): JSON
+        refreshAccessToken: JSON
     }
 
     type Mutation {

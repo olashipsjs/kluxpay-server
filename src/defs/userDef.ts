@@ -15,6 +15,7 @@ const userDef = `#graphql
         isEmailVerified: Boolean!
         referralCode: String!
         role: String!
+        currency: String!
     }
 
     type Query {
@@ -34,6 +35,7 @@ const userDef = `#graphql
         firstName: String
         lastName: String
         dateOfBirth: String
+        currency: String
     }
 
     type Mutation {

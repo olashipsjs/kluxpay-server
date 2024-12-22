@@ -23,7 +23,7 @@ const updateBalance = async () => {
 
       console.log({ wallet: wallet.publicKey, balance });
 
-      wallet.balance = String(balance);
+      wallet.balance = balance || 0;
 
       await wallet.save();
     }

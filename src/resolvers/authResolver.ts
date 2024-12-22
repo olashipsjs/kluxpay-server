@@ -95,6 +95,7 @@ const authResolver = {
         // set cookie for certain days
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
+          sameSite: 'none',
           maxAge: COOKIE_MAX_AGE,
         });
 

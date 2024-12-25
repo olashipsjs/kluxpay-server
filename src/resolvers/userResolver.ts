@@ -65,23 +65,11 @@ const userResolver = {
       }: {
         payload: Pick<
           UserType,
-          | 'email'
-          | 'password'
-          | 'firstName'
-          | 'lastName'
-          | 'dateOfBirth'
-          | 'activeWallet'
+          'email' | 'password' | 'firstName' | 'lastName' | 'dateOfBirth'
         >;
       }
     ) => {
-      const {
-        email,
-        password,
-        firstName,
-        lastName,
-        dateOfBirth,
-        activeWallet,
-      } = payload;
+      const { email, password, firstName, lastName, dateOfBirth } = payload;
 
       try {
         const validationResult = userSchema.validate({
@@ -113,7 +101,6 @@ const userResolver = {
           lastName,
           firstName,
           dateOfBirth,
-          activeWallet,
           email: sanitizedEmail,
           password: hashPassword,
           referralCode: REFERRAL_CODE,
@@ -134,10 +121,7 @@ const userResolver = {
         payload,
       }: {
         payload: Partial<
-          Pick<
-            UserType,
-            'firstName' | 'lastName' | 'dateOfBirth' | 'activeWallet'
-          >
+          Pick<UserType, 'firstName' | 'lastName' | 'dateOfBirth'>
         >;
       },
       { req }: any

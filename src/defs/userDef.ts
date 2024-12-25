@@ -30,7 +30,6 @@ const userDef = `#graphql
         dateOfBirth: String!
         email: String!
         password: String!
-        activeWallet: String
     }
 
     input UpdateUserPayload {
@@ -38,7 +37,6 @@ const userDef = `#graphql
         lastName: String
         dateOfBirth: String
         currency: String
-        activeWallet: String
     }
 
     type Mutation {

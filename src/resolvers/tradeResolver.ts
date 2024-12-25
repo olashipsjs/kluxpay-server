@@ -97,6 +97,15 @@ const tradeResolver = {
           throw new Error('Unable to complete request');
         }
 
+        if (
+          offer.minLimit > payload.amount ||
+          payload.amount > offer.maxLimit
+        ) {
+          throw new Error(
+            'Invalid trade amount. Either offer minimum or maximum offer limit is exceeded'
+          );
+        }
+
         if (!user.isEmailVerified) {
           throw new Error('Only verified users are allowed to post offers.');
         }

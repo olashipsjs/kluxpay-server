@@ -5,45 +5,48 @@ const walletDef = `#graphql
     type Wallet {
         user: User!
         _id: String!
+        name: String
         escrow: String!
         balance: String!
-        platform: String!,
+        network: String!,
         publicKey: String!,
         privateKey: String!,
     }
 
     input GetAssetBalancePayload {
-        platform: String!
-        tokenAddress: String
-    }
-
-    input WalletBalancePayload {
-        platform: String!
+        walletId: String!
+        contractAddress: String
     }
 
     type Query {
         getWallets: [Wallet]
         getUserWallets: [Wallet]
-        getWallet(platform: String!): Wallet
+        getWallet(id: ID!): Wallet
         getAssetBalance(payload: GetAssetBalancePayload!): JSON
     }
 
     input CreateWalletPayload {
         email: String!
+        networks: String!
     }
 
    
-    input SendPayload {
+    input SendAssetPayload {
         to: String!
-        from: String!
         amount: Float!
-        address: String
-        decimals: Int
+        walletId: String!
+        contractAddress: String
+    }
+
+    input UpdateWalletPayload {
+        network: String
+        name: String
     }
 
     type Mutation {
-        sendAsset(payload: SendPayload!): JSON
-        createWallet(payload: CreateWalletPayload!): Wallet
+        sendAsset(payload: SendAssetPayload!): JSON
+        updateWallet(id: ID! payload: UpdateWalletPayload!): Wallet
+        createWallet(payload: CreateWalletPayload!): [Wallet!]
     }
 
 `;

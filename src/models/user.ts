@@ -13,6 +13,7 @@ export type UserType = Document & {
   currency: string;
   isEmailVerified: boolean;
   referralCode: string;
+  activeWallet?: Types.ObjectId;
   role: 'admin' | 'owner' | 'moderator' | 'trader' | 'developer';
 };
 
@@ -38,6 +39,10 @@ const schema = new Schema<UserType>(
       type: String,
       default: 'trader',
       enum: ['admin', 'owner', 'moderator', 'trader', 'developer'],
+    },
+    activeWallet: {
+      type: Schema.Types.ObjectId,
+      ref: 'Wallets',
     },
   },
   { timestamps: true }

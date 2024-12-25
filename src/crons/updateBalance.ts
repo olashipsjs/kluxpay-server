@@ -8,17 +8,15 @@ const updateBalance = async () => {
     for (const wallet of wallets) {
       let balance: number | undefined = undefined;
 
-      switch (wallet.platform) {
+      switch (wallet.network) {
         case 'ethereum':
-          balance = await ethereumService.getAssetBalance({
+          balance = await ethereumService.getContractBalance({
             walletAddress: wallet.publicKey,
           });
           break;
 
         default:
-          throw new Error(
-            `Unsupported blockchain platform: ${wallet.platform}`
-          );
+          throw new Error(`Unsupported blockchain network: ${wallet.network}`);
       }
 
       console.log({ wallet: wallet.publicKey, balance });

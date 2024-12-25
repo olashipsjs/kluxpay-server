@@ -38,6 +38,8 @@ const authTyDef = `#graphql
         refreshAccessToken: JSON
     }
 
+
+
     type Mutation {
         signIn(payload: SignInPayload!): SignInReturn!
         verifyEmail(payload: VerifyEmailPayload!): JSON

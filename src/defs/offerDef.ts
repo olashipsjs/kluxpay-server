@@ -17,18 +17,17 @@ const offerDef = `#graphql
     }
 
     type GetOffers {
-        page: Int!
-        total: Int!
-        limit: Int!
+        page: Int
+        total: Int
+        limit: Int
         offers: [Offer!]
-        assets: [String!]!
     }
 
     input GetOffersPayload {
-        page: Int!
-        limit: Int!
-        type: String!
-        assets: String!
+        page: Int
+        limit: Int
+        type: String
+        assets: String
     }
 
     type Query {

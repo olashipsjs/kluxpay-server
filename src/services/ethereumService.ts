@@ -32,25 +32,25 @@ const ethereumService = {
     }
   },
 
-  getAssetBalance: async (args: {
+  getContractBalance: async (args: {
     walletAddress: string;
-    tokenAddress?: string;
+    contractAddress?: string;
   }): Promise<number | undefined> => {
-    const { walletAddress, tokenAddress } = args;
+    const { walletAddress, contractAddress } = args;
 
     try {
-      if (!ethers.isAddress(walletAddress)) {
-        throw new Error('Invalid wallet address');
-      }
-
       let balance = 0;
 
-      if (tokenAddress) {
-        if (!ethers.isAddress(tokenAddress)) {
+      if (contractAddress) {
+        if (!ethers.isAddress(contractAddress)) {
           throw new Error('Invalid token address');
         }
 
-        const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+        const contract = new ethers.Contract(
+          contractAddress,
+          ERC20_ABI,
+          provider
+        );
         const decimals = await contract.decimals();
 
         const formattedDecimals = Number(decimals);
@@ -84,23 +84,30 @@ const ethereumService = {
   send: async ({
     to,
     amount,
-    address,
     signingKey,
-    decimals = 18,
+    contractAddress,
   }: {
     to: string;
     amount: string;
     signingKey: string;
-    address?: string;
-    decimals: number;
+    contractAddress?: string;
   }) => {
     try {
       const wallet = new ethers.Wallet(signingKey, provider);
       let tx = null;
 
-      if (address) {
-        const contract = new ethers.Contract(address, ERC20_ABI, wallet);
-        const tokenAmount = ethers.parseUnits(amount, decimals);
+      if (contractAddress) {
+        const contract = new ethers.Contract(
+          contractAddress,
+          ERC20_ABI,
+          wallet
+        );
+
+        const decimals = await contract.decimals();
+
+        const formattedDecimals = Number(decimals);
+
+        const tokenAmount = ethers.parseUnits(amount, formattedDecimals);
 
         tx = await contract.transfer(to, tokenAmount);
         await tx.wait();

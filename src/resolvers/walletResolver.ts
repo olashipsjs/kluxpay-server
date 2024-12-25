@@ -7,21 +7,18 @@ import bearerAuthorization from '../middlewares/bearerAuthorization';
 
 const walletResolver = {
   Query: {
-    getWallet: async (
-      _: any,
-      { platform }: { platform: string },
-      { req }: any
-    ) => {
+    getWallet: async (_: any, { id }: { id: string }, { req }: any) => {
       try {
         const user = await bearerAuthorization(req);
 
-        const wallet = await Wallet.findOne({
-          platform,
-          userId: user.id,
-        });
+        const wallet = await Wallet.findById(id);
 
         if (!wallet) {
           throw new Error('Could not find user wallet');
+        }
+
+        if (user.id.toString() !== wallet.user.toString()) {
+          throw new Error('Unauthorized request.');
         }
 
         return wallet;
@@ -70,27 +67,30 @@ const walletResolver = {
         payload,
       }: {
         payload: {
-          platform: string;
-          tokenAddress: string;
+          walletId: string;
+          contractAddress: string;
         };
       },
       { req }: any
     ) => {
-      const { platform, tokenAddress } = payload;
+      const { walletId, contractAddress } = payload;
 
       try {
         const { id } = await bearerAuthorization(req);
 
-        const wallet = await Wallet.findOne({ platform, user: id });
+        const wallet = await Wallet.findById(walletId);
 
         if (!wallet) throw new Error('Wallet not found');
 
+        if (id.toString() !== wallet.user.toString())
+          throw new Error('Unauthorized request.');
+
         let balance: undefined | number = undefined;
 
-        switch (wallet.platform) {
+        switch (wallet.network) {
           case 'ethereum':
-            balance = await ethereumService.getAssetBalance({
-              tokenAddress,
+            balance = await ethereumService.getContractBalance({
+              contractAddress,
               walletAddress: wallet.publicKey,
             });
             break;
@@ -122,7 +122,7 @@ const walletResolver = {
   Mutation: {
     createWallet: async (
       _: any,
-      { payload }: { payload: { email: string } }
+      { payload }: { payload: { email: string; networks: string } }
     ) => {
       try {
         const user = await User.findOne({ email: payload.email });
@@ -131,30 +131,20 @@ const walletResolver = {
           throw new Error('Could not find user account');
         }
 
-        const platforms = ['ethereum', 'bitcoin'];
+        const networks = payload.networks.split(',');
+        const wallets = [];
 
-        for (const platform of platforms) {
-          const existingWallet = await Wallet.findOne({
-            user: user._id,
-            platform,
-          });
-
-          if (existingWallet) {
-            throw new Error(
-              `A wallet for platform "${platform}" already assigned to you`
-            );
-          }
-
+        for (const network of networks) {
           let keys: Awaited<ReturnType<typeof ethereumService.createWallet>> =
             undefined;
 
-          switch (platform) {
+          switch (network.trim().toLowerCase()) {
             case 'ethereum':
               keys = await ethereumService.createWallet();
               break;
 
             default:
-              throw new Error('Unsupported coin platform: ' + platform);
+              throw new Error('Unsupported network: ' + network);
           }
 
           if (!keys) {
@@ -165,16 +155,38 @@ const walletResolver = {
           const encryptedPrivateKey = aws256gsm.encrypt(privateKey);
 
           const wallet = new Wallet({
-            platform,
+            network,
             publicKey,
             user: user._id,
             privateKey: encryptedPrivateKey,
           });
 
           await wallet.save();
-
-          return wallet;
+          wallets.push(wallet);
         }
+
+        return wallets;
+      } catch (error) {
+        console.log(error);
+        throw new Error((error as Error).message);
+      }
+    },
+
+    updateWallet: async (
+      _: any,
+      { id, payload }: { id: string; payload: { publicKey?: string } },
+      { req }: any
+    ) => {
+      try {
+        const user = await bearerAuthorization(req);
+
+        const wallet = await Wallet.findOneAndUpdate(
+          { _id: id, user: user.id },
+          payload,
+          { new: true }
+        );
+
+        return wallet;
       } catch (error) {
         console.log(error);
         throw new Error((error as Error).message);
@@ -188,15 +200,20 @@ const walletResolver = {
       }: {
         payload: {
           to: string;
-          from: string;
           amount: string;
-          address?: string;
-          decimals: number;
+          walletId: string;
+          contractAddress?: string;
         };
-      }
+      },
+      { req }: any
     ) => {
       try {
-        const wallet = await Wallet.findById(payload.from);
+        const { id } = await bearerAuthorization(req);
+
+        const wallet = await Wallet.findOne({
+          _id: payload.walletId,
+          user: id,
+        });
 
         if (!wallet) {
           throw new Error('Wallet not found');
@@ -204,14 +221,13 @@ const walletResolver = {
 
         let tx: null | ethers.TransactionResponse = null;
 
-        switch (wallet.platform) {
+        switch (wallet.network) {
           case 'ethereum':
             tx = await ethereumService.send({
               to: payload.to,
               amount: payload.amount,
               signingKey: wallet.privateKey,
-              address: payload.address,
-              decimals: payload.decimals,
+              contractAddress: payload.contractAddress,
             });
 
             return tx;

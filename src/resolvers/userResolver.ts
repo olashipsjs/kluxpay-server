@@ -4,6 +4,7 @@ import random from '../utils/random';
 import userSchema from '../schemas/userSchema';
 import User, { UserType } from '../models/user';
 import bearerAuthorization from '../middlewares/bearerAuthorization';
+import Wallet from '../models/wallet';
 
 const userResolver = {
   Query: {
@@ -42,6 +43,20 @@ const userResolver = {
     },
   },
 
+  User: {
+    activeWallet: async (parent: any) => {
+      try {
+        if (!parent.activeWallet) return null;
+
+        const wallet = await Wallet.findById(parent.activeWallet);
+        return wallet;
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    },
+  },
+
   Mutation: {
     createUser: async (
       _: any,
@@ -50,11 +65,23 @@ const userResolver = {
       }: {
         payload: Pick<
           UserType,
-          'email' | 'password' | 'firstName' | 'lastName' | 'dateOfBirth'
+          | 'email'
+          | 'password'
+          | 'firstName'
+          | 'lastName'
+          | 'dateOfBirth'
+          | 'activeWallet'
         >;
       }
     ) => {
-      const { email, password, firstName, lastName, dateOfBirth } = payload;
+      const {
+        email,
+        password,
+        firstName,
+        lastName,
+        dateOfBirth,
+        activeWallet,
+      } = payload;
 
       try {
         const validationResult = userSchema.validate({
@@ -82,12 +109,11 @@ const userResolver = {
         const REFERRAL_CODE = random.string(8);
         const hashPassword = await bcrypt.hash(password, saltRounds);
 
-        console.log({ dateOfBirth });
-
         const newUser = new User({
           lastName,
           firstName,
           dateOfBirth,
+          activeWallet,
           email: sanitizedEmail,
           password: hashPassword,
           referralCode: REFERRAL_CODE,
@@ -108,7 +134,10 @@ const userResolver = {
         payload,
       }: {
         payload: Partial<
-          Pick<UserType, 'firstName' | 'lastName' | 'dateOfBirth'>
+          Pick<
+            UserType,
+            'firstName' | 'lastName' | 'dateOfBirth' | 'activeWallet'
+          >
         >;
       },
       { req }: any

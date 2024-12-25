@@ -8,34 +8,33 @@ const offerDeactivation = async () => {
 
   for (const offer of offers) {
     for (const contract of p2pContracts) {
-      const wallet = await Wallet.findOne({
+      const wallets = await Wallet.find({
         user: offer.createdBy._id,
-        platform: contract.platform,
       });
 
-      if (!wallet) throw new Error('Wallet was not found');
+      for (const wallet of wallets) {
+        let balance;
 
-      let balance;
+        try {
+          switch (contract.network) {
+            case 'ethereum':
+              balance = await ethereumService.getContractBalance({
+                walletAddress: wallet.publicKey,
+                contractAddress: contract.address,
+              });
+          }
 
-      try {
-        switch (contract.platform) {
-          case 'ethereum':
-            balance = await ethereumService.getAssetBalance({
-              walletAddress: wallet.publicKey,
-              tokenAddress: contract.address,
-            });
+          if (balance === undefined || balance === null)
+            throw new Error('Unable to fetch asset balance.');
+
+          if (balance > offer.amount) return;
+
+          offer.isActive = false;
+          await offer.save();
+        } catch (error) {
+          console.error('An error occurred during offer activation:', error);
+          throw error;
         }
-
-        if (balance === undefined || balance === null)
-          throw new Error('Unable to fetch asset balance.');
-
-        if (balance > offer.amount) return;
-
-        offer.isActive = false;
-        await offer.save();
-      } catch (error) {
-        console.error('An error occurred during offer activation:', error);
-        throw error;
       }
     }
   }

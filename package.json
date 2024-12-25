@@ -30,6 +30,7 @@
     "mongoose": "^8.7.1",
     "nodemailer": "^6.9.15",
     "nodemon": "^3.1.7",
+    "socket.io": "^4.8.1",
     "tailwindcss": "^3.4.15",
     "tiny-secp256k1": "^2.2.3",
     "validator": "^13.12.0"

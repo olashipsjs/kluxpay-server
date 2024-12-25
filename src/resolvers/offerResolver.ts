@@ -34,12 +34,21 @@ const offerResolver = {
           type: string;
           assets: string;
         };
-      }
+      },
+      { req }: any
     ) => {
-      let { page, limit, assets, type } = payload;
+      let { page = 1, limit = 12, assets = 'all', type } = payload;
 
       try {
-        const defaultAssets = ['tether', 'bitcoin', 'ethereum', 'usd-coin'];
+        const user = await bearerAuthorization(req);
+
+        const defaultAssets = [
+          'tether',
+          'bitcoin',
+          'ethereum',
+          'usd-coin',
+          'binancecoin',
+        ];
 
         // Ensure page and limit are non-negative integers
         const pageNumber = Math.max(0, page - 1);
@@ -63,7 +72,9 @@ const offerResolver = {
         // Fetch matching offers with pagination
         const offers = await Offer.find({
           coinId: { $in: assetList },
+          isActive: true,
           type: { $in: types },
+          createdBy: { $nin: user.id },
         })
           .skip(pageNumber * limitNumber)
           .limit(limitNumber);
@@ -71,14 +82,15 @@ const offerResolver = {
         // Get total count for pagination
         const total = await Offer.countDocuments({
           coinId: { $in: assetList },
+          isActive: true,
           type: { $in: types },
+          createdBy: { $nin: user.id },
         });
 
         return {
           total,
           limit: limitNumber,
           page: pageNumber + 1,
-          assets: defaultAssets,
           offers: offers || [],
         };
       } catch (error) {
@@ -139,17 +151,17 @@ const offerResolver = {
 
         for (const contract of p2pContracts) {
           const wallet = await Wallet.findOne({
-            platform: contract.platform,
+            network: contract.network,
             user: offer.createdBy._id,
           });
 
           if (wallet) {
             let balance: undefined | number = undefined;
 
-            switch (wallet.platform) {
+            switch (wallet.network) {
               case 'ethereum':
-                balance = await ethereumService.getAssetBalance({
-                  tokenAddress: contract.address,
+                balance = await ethereumService.getContractBalance({
+                  contractAddress: contract.address,
                   walletAddress: wallet.publicKey,
                 });
                 break;

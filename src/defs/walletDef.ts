@@ -31,7 +31,7 @@ const walletDef = `#graphql
     }
 
    
-    input SendAssetPayload {
+    input SendTokenPayload {
         to: String!
         amount: Float!
         walletId: String!
@@ -44,7 +44,7 @@ const walletDef = `#graphql
     }
 
     type Mutation {
-        sendAsset(payload: SendAssetPayload!): JSON
+        sendToken(payload: SendTokenPayload!): JSON
         updateWallet(id: ID! payload: UpdateWalletPayload!): Wallet
         createWallet(payload: CreateWalletPayload!): [Wallet!]
     }

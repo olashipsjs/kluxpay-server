@@ -142,31 +142,34 @@ const startServer = async () => {
     io.on('connection', (socket) => {
       console.log('New client connected:', socket.id);
 
-      socket.on('join', async ({ tradeId, userId }, cb) => {
+      socket.on('join', async ({ tradeId }, cb) => {
         if (!tradeId) return cb(new Error('tradeId is required'), false);
 
         const room = tradeId;
         socket.join(room);
 
-        // Fetch and send all previous messages for this trade
-        const messages = await Message.find({ trade: tradeId }).sort({
-          createdAt: 1,
-        });
-        socket.emit('roomData', { room, messages });
+        try {
+          // Fetch and send all previous messages for this trade
+          const messages = await Message.find({ trade: tradeId })
+            .sort({
+              createdAt: 1,
+            })
+            .populate([
+              { path: 'sender', select: '-password' }, // Populate 'sender' and exclude sensitive fields like 'password'
+              { path: 'trade' }, // Populate 'trade'
+            ]);
 
-        // Welcome message
-        const welcomeMessage = new Message({
-          user: userId,
-          trade: tradeId,
-          text: 'Please confirm payment before proceeding to make payment',
-        });
-        await welcomeMessage.save();
+          // Emit room data to the joining client
+          socket.emit('roomData', { room, messages });
 
-        // Send welcome message to current user and notify others in the room
-        socket.emit('message', welcomeMessage);
-        socket.broadcast.to(room).emit('message', welcomeMessage);
+          // Notify other clients in the room about the updated room data
+          socket.to(room).emit('roomData', { room, messages });
 
-        cb(null, true);
+          cb(null, true);
+        } catch (err) {
+          console.error('Error fetching messages:', err);
+          cb(new Error('Failed to fetch room messages'), false);
+        }
       });
 
       socket.on('sendMessage', async ({ userId, tradeId, text }, cb) => {
@@ -178,8 +181,22 @@ const startServer = async () => {
           const message = new Message({ text, sender: userId, trade: tradeId });
           await message.save();
 
-          io.to(tradeId).emit('message', message);
-          cb(null, message);
+          const populatedMessage = await Message.findById(message._id).populate(
+            [
+              { path: 'sender', select: '-password' }, // Exclude sensitive fields like 'password'
+              { path: 'trade' },
+            ]
+          );
+
+          if (!populatedMessage) {
+            throw new Error('Message could not be populated');
+          }
+
+          // Emit the message event to all clients in the trade room
+          io.to(tradeId).emit('message', populatedMessage);
+
+          // Acknowledge the sender
+          cb(null, populatedMessage);
         } catch (err) {
           console.error(err);
           cb(new Error('Failed to send message'));

@@ -193,7 +193,7 @@ const walletResolver = {
       }
     },
 
-    sendAsset: async (
+    sendToken: async (
       _: any,
       {
         payload,
@@ -229,12 +229,9 @@ const walletResolver = {
               signingKey: wallet.privateKey,
               contractAddress: payload.contractAddress,
             });
-
-            return tx;
-
-          default:
-            throw new Error('Unsupported blockchain platform');
         }
+
+        return { to: payload.to, amount: payload.amount };
       } catch (error) {
         console.log(error);
         throw new Error((error as Error).message);

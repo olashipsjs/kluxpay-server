@@ -3,15 +3,16 @@ import { model, Schema, Types } from 'mongoose';
 export type TradeDocument = Document & {
   _id: string;
   amount: number;
-  rate: string;
+  rate: number;
   offer: Types.ObjectId;
+  wallet: Types.ObjectId;
   createdBy: Types.ObjectId;
   status: 'open' | 'paid' | 'closed';
 };
 
 const schema = new Schema<TradeDocument>(
   {
-    rate: { type: String, required: true },
+    rate: { type: Number, required: true },
     amount: { type: Number, required: true },
     offer: { type: Schema.Types.ObjectId, required: true, ref: 'Offers' },
     createdBy: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
@@ -21,6 +22,7 @@ const schema = new Schema<TradeDocument>(
       required: true,
       default: 'open',
     },
+    wallet: { type: Schema.Types.ObjectId, required: true, ref: 'Wallets' },
   },
   { timestamps: true }
 );

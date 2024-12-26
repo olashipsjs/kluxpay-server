@@ -1,7 +1,9 @@
+import { string } from 'joi';
 import bearerAuthorization from '../middlewares/bearerAuthorization';
 import Offer from '../models/offer';
 import Trade, { TradeDocument } from '../models/trade';
 import User from '../models/user';
+import Wallet from '../models/wallet';
 
 const tradeResolver = {
   Query: {
@@ -37,7 +39,10 @@ const tradeResolver = {
       try {
         const { id } = await bearerAuthorization(req);
 
-        const trades = await Trade.find().populate('offer');
+        const trades = await Trade.find().populate([
+          { path: 'offer' },
+          { path: 'wallet', select: '-privateKey' },
+        ]);
 
         if (!trades || trades.length === 0) {
           return [];
@@ -49,6 +54,8 @@ const tradeResolver = {
             trade.createdBy.toString() === id.toString()
           );
         });
+
+        console.log({ userTrades });
 
         return userTrades;
       } catch (error) {
@@ -79,6 +86,16 @@ const tradeResolver = {
         throw new Error((error as Error).message);
       }
     },
+
+    wallet: async ({ wallet }: { wallet: string }) => {
+      try {
+        const doc = await Wallet.findById(wallet);
+        return doc;
+      } catch (error) {
+        console.log((error as Error).message);
+        throw new Error((error as Error).message);
+      }
+    },
   },
 
   Mutation: {
@@ -98,8 +115,8 @@ const tradeResolver = {
         }
 
         if (
-          offer.minLimit > payload.amount ||
-          payload.amount > offer.maxLimit
+          offer.minLimit / payload.rate > payload.amount ||
+          payload.amount > offer.maxLimit / payload.rate
         ) {
           throw new Error(
             'Invalid trade amount. Either offer minimum or maximum offer limit is exceeded'

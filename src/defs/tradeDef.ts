@@ -7,6 +7,9 @@ const tradeDef = `#graphql
         rate: String!
         status: String!
         createdBy: User!
+        createdAt: String!
+        updatedAt: String!
+        wallet: Wallet
     }
 
     type Query {
@@ -17,8 +20,9 @@ const tradeDef = `#graphql
 
     input CreateTradePayload {
         offer: ID!
-        rate: String!
-        amount: String!
+        rate: Float!
+        amount:Float!
+        wallet: ID!
     }
 
     type Mutation {

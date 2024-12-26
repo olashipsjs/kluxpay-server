@@ -97,8 +97,10 @@ const ethereumService = {
       let tx = null;
 
       if (contractAddress) {
-        if (!ethers.isAddress(contractAddress))
+        if (!ethers.isAddress(contractAddress)) {
           throw new Error('Invalid contract address');
+        }
+
         const contract = new ethers.Contract(
           contractAddress,
           ERC20_ABI,

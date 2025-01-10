@@ -1,13 +1,12 @@
+import { Document } from 'mongoose';
 import { model, Schema, Types } from 'mongoose';
 
 export type TradeDocument = Document & {
-  _id: string;
-  amount: number;
   rate: number;
+  amount: number;
   offer: Types.ObjectId;
-  wallet: Types.ObjectId;
   createdBy: Types.ObjectId;
-  status: 'open' | 'paid' | 'closed';
+  status: 'pending' | 'completed' | 'cancelled' | 'paid';
 };
 
 const schema = new Schema<TradeDocument>(
@@ -18,11 +17,10 @@ const schema = new Schema<TradeDocument>(
     createdBy: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
     status: {
       type: String,
-      enum: ['open', 'paid', 'closed'],
       required: true,
-      default: 'open',
+      default: 'pending',
+      enum: ['pending', 'completed', 'cancelled', 'paid'],
     },
-    wallet: { type: Schema.Types.ObjectId, required: true, ref: 'Wallets' },
   },
   { timestamps: true }
 );

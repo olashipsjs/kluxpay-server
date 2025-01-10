@@ -1,30 +1,27 @@
 import { ethers } from 'ethers';
+import handleError from '../utils/handleError';
 
 const ERC20_ABI = [
-  'function transfer(address to, uint amount) public returns (bool)',
+  'function transfer(address to, uint256 amount) public returns (bool)',
   'function balanceOf(address owner) view returns (uint256)',
-  'function decimals() view returns (uint8)',
+  'function decimals() public view returns (uint8)',
 ];
 
 export const provider = new ethers.InfuraProvider(
-  'mainnet',
+  'sepolia',
   process.env.INFURA_KEY
 );
 
 const ethereumService = {
-  createWallet: async (): Promise<
-    | {
-        privateKey: string;
-        publicKey: string;
-      }
-    | undefined
-  > => {
+  provider,
+  createWallet: async () => {
     try {
-      const { address, privateKey } = ethers.Wallet.createRandom();
+      const wallet = ethers.Wallet.createRandom(provider);
 
       return {
-        privateKey,
-        publicKey: address,
+        privateKey: wallet.privateKey,
+        publicKey: wallet.address,
+        mnemonicPhrase: wallet.mnemonic?.phrase,
       };
     } catch (error) {
       console.log(error);
@@ -51,13 +48,11 @@ const ethereumService = {
           ERC20_ABI,
           provider
         );
+
         const decimals = await contract.decimals();
-
-        const formattedDecimals = Number(decimals);
-
         const balanceOf = await contract.balanceOf(walletAddress);
 
-        balance = parseFloat(ethers.formatUnits(balanceOf, formattedDecimals));
+        balance = parseFloat(ethers.formatUnits(balanceOf, decimals));
 
         return balance;
       }
@@ -67,8 +62,7 @@ const ethereumService = {
 
       return balance;
     } catch (error) {
-      console.error('Error fetching balance:', error);
-      throw new Error((error as Error).message);
+      handleError(error);
     }
   },
 
@@ -109,22 +103,29 @@ const ethereumService = {
 
         const decimals = await contract.decimals();
 
-        const formattedDecimals = Number(decimals);
+        const sender = wallet.address;
+        const balanceOfSender = await contract.balanceOf(sender);
+        const senderBalance = parseFloat(
+          ethers.formatUnits(balanceOfSender, decimals)
+        );
 
-        const tokenAmount = ethers.parseUnits(amount, formattedDecimals);
+        if (senderBalance < parseFloat(amount)) {
+          throw new Error('Insufficient balance.');
+        }
 
-        tx = await contract.transfer(to, tokenAmount);
+        const amountInSmallestUnit = ethers.parseUnits(amount, decimals);
+
+        tx = await contract.transfer(to, amountInSmallestUnit);
         await tx.wait();
-      } else {
-        const amountInWei = ethers.parseEther(amount);
-        tx = await wallet.sendTransaction({ to, value: amountInWei });
-        await tx.wait();
+        return tx;
       }
 
+      const amountInWei = ethers.parseEther(amount);
+      tx = await wallet.sendTransaction({ to, value: amountInWei });
+      await tx.wait();
       return tx;
     } catch (error) {
-      console.error('Transaction failed:', error);
-      throw new Error('Transaction failed');
+      handleError(error);
     }
   },
 
@@ -134,8 +135,70 @@ const ethereumService = {
 
       return receipt;
     } catch (error) {
-      console.log(error);
-      throw new Error((error as Error).message);
+      handleError(error);
+    }
+  },
+
+  calculateGas: async (transaction: {
+    to: string;
+    value: string;
+    maxFeePerGas?: string;
+    maxPriorityFee: string;
+  }) => {
+    const { to, value, maxPriorityFee, maxFeePerGas } = transaction;
+
+    try {
+      const gasLimit = await provider.estimateGas({
+        to,
+        value: ethers.parseEther(value),
+        data: '0x',
+      });
+
+      const block = await provider.getBlock('latest');
+      const baseFeePerGas = block?.baseFeePerGas || ethers.toBigInt(0);
+
+      const maxPriorityFeePerGas = ethers.parseUnits(maxPriorityFee, 'gwei');
+      const maxFeePerGasParsed = maxFeePerGas
+        ? ethers.parseUnits(maxFeePerGas, 'gwei')
+        : baseFeePerGas + maxPriorityFeePerGas;
+
+      if (maxFeePerGasParsed < baseFeePerGas + maxPriorityFeePerGas) {
+        throw new Error(
+          'maxFeePerGas must be at least baseFeePerGas + maxPriorityFeePerGas'
+        );
+      }
+
+      const totalCost = ethers.formatEther(
+        gasLimit * (baseFeePerGas + maxPriorityFeePerGas)
+      );
+
+      return {
+        cost: totalCost,
+        limit: gasLimit.toString(),
+        baseFeePerGas: ethers.formatUnits(baseFeePerGas, 'gwei'),
+        maxFeePerGas: ethers.formatUnits(maxFeePerGasParsed, 'gwei'),
+        maxPriorityFeePerGas: ethers.formatUnits(maxPriorityFeePerGas, 'gwei'),
+      };
+    } catch (error) {
+      handleError(error);
+    }
+  },
+
+  block: async (): Promise<ethers.Block | null> => {
+    try {
+      return await new Promise((resolve, reject) => {
+        provider.once('block', async (blockNumber: number) => {
+          try {
+            const block = await provider.getBlock(blockNumber);
+            resolve(block);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      });
+    } catch (error) {
+      handleError(error);
+      return null;
     }
   },
 };

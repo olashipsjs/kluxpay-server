@@ -1,30 +1,48 @@
-import { Schema, Types, model } from 'mongoose';
+import { Document, model, Schema, Types } from 'mongoose';
 
-export type TransactionType = {
+export type TransactionDocument = Document & {
+  _id: Types.ObjectId;
+  type:
+    | 'escrow release'
+    | 'escrow return'
+    | 'escrow reserve'
+    | 'deposit'
+    | 'withdraw'
+    | 'gift';
+  amount: number;
   to: string;
-  fee: number;
+  user: Types.ObjectId;
+  trade: Types.ObjectId;
+  txHash: string;
+  confirmations: number;
+  timestamp: Date;
   from: string;
   network: string;
-  txHash: string;
-  wallet: Types.ObjectId;
-  type: 'send' | 'received';
-  blockConfirmation: number;
 };
 
-const schema = new Schema<TransactionType>(
-  {
-    to: { type: String, required: true },
-    fee: { type: Number, required: true },
-    from: { type: String, required: true },
-    network: { type: String, required: true },
-    txHash: { type: String, required: true },
-    wallet: { type: Schema.Types.ObjectId, ref: 'Wallets', required: true },
-    type: { type: String, enum: ['send', 'received'], required: true },
-    blockConfirmation: { type: Number, required: true },
+const schema = new Schema<TransactionDocument>({
+  type: {
+    type: String,
+    required: true,
+    enum: [
+      'escrow release',
+      'escrow return',
+      'escrow reserve',
+      'withdraw',
+      'deposit',
+    ],
   },
-  { timestamps: true }
-);
+  to: { type: String, required: true },
+  from: { type: String, required: true },
+  amount: { type: Number, required: true },
+  timestamp: { type: Date, default: Date.now() },
+  confirmations: { type: Number, required: true },
+  trade: { type: Schema.Types.ObjectId, ref: 'Trade' },
+  txHash: { type: String, required: true, unique: true },
+  network: { type: String, required: true, ref: 'Networks' },
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+});
 
-const Transaction = model<TransactionType>('Transactions', schema);
+const Transaction = model<TransactionDocument>('Transactions', schema);
 
 export default Transaction;

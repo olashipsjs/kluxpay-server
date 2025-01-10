@@ -5,31 +5,30 @@ export type OfferDocument = Document & {
   fiat: string;
   notes: string;
   amount: number;
-  coinId: string;
   minLimit: number;
   maxLimit: number;
-  timeout: 15 | 30;
+  timeout: 15 | 30 | 60 | 90;
   isActive: boolean;
-  priceMargin: number;
+  margin: number;
   type: 'buy' | 'sell';
+  coin: string;
   createdBy: Types.ObjectId;
-  payment: Types.ObjectId;
+  payment?: Types.ObjectId;
 };
 
 const schema = new Schema<OfferDocument>(
   {
-    fiat: { type: String, required: true },
+    coin: { type: String, required: true },
     notes: { type: String, required: true },
-    coinId: { type: String, required: true },
-    amount: { type: Number, required: true, default: 0 },
-    priceMargin: { type: Number, required: true, default: 0 },
-    timeout: { type: Number, required: true, enum: [15, 30] },
-    isActive: { type: Boolean, required: true, default: false },
+    fiat: { type: String, required: true },
+    margin: { type: Number, required: true, default: 0 },
     minLimit: { type: Number, required: true, default: 0 },
     maxLimit: { type: Number, required: true, default: 0 },
+    isActive: { type: Boolean, required: true, default: false },
     type: { type: String, required: true, enum: ['sell', 'buy'] },
+    timeout: { type: Number, required: true, enum: [15, 30, 60, 90] },
     createdBy: { type: Schema.Types.ObjectId, required: true, ref: 'Users' },
-    payment: { type: Schema.Types.ObjectId, required: true, ref: 'Payments' },
+    payment: { type: Schema.Types.ObjectId, ref: 'Payments' },
   },
   { timestamps: true }
 );

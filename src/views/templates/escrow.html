@@ -1,48 +1,45 @@
 {{> header}}
 <section style="padding: 2rem 1.25rem;">
-    <h2 style="font-size: 24px;">
-        {{title}}
-    </h2>
+    <h1 style="font-size: 24px;">Your Trade has started</h1>
 
-    <p style="margin-top: 0.5rem;">
-        Hello {{name}}!
+    <p style="margin-top: 20px;">
+        Hi,
     </p>
 
-    <p style="margin-top: 2rem;">
-        Your escrow for the P2P trade has been successfully locked. Please review the trade details below:
-    </p>
+    <p style="margin-top: 40px;">Your trade has been fully funded and {{amount}} {{coinSymbol}} is now in escrow. You
+        can begin your trade</p>
 
-    <p style="margin-top: 2rem;">Your escrow for the P2P trade has been successfully locked. Please review the trade
-        details below:</p>
+    <h3 style="margin-top: 2rem;">Here’s what you need to do:</h3>
 
-    <ul style="padding: 0rem 1.25rem; margin-top: 0.5rem;">
+    <ul style="padding: 0rem 1.25rem; margin-top: 0.5rem; list-style-type:decimal">
         <li>
-            <span><strong>Trade ID:</strong> {{tradeId}}</span>
+            <span>Do not reply to this email. Use the trade chat to chat with your partner privately.</span>
         </li>
         <li>
-            <span><strong>Buyer:</strong> {{buyer}}</span>
+            <span>Send the seller a message to let them know you're ready. You can message them here.{{url}}</span>
         </li>
         <li>
-            <span><strong>Asset:</strong> {{asset}}</span>
+            <span>Read and follow the trade instructions. Once you've made your payment, click Paid.</span>
         </li>
         <li>
-            <span><strong>Amount in escrow:</strong> {{amount}} {{asset}}</span>
+            <span>
+                If the seller is unresponsive, click Cancel and find a more responsive seller.
+            </span>
         </li>
     </ul>
 
-    <p style="margin-top: 2rem;">The escrow ensures secure trade and protects both parties. Please follow these
-        steps to complete the transaction:</p>
+    <p style="margin-top: 20px;">
+        You have {{timeout}} minutes until escrow expires. After that, you'll need to start a new trade.
+    </p>
 
-    <ul style="padding: 0rem 1.25rem; margin-top: 0.5rem;">
-        <li>
-            <span>Confirm receipt of funds from the counterparty.</span>
-        </li>
-        <li style="margin-top: 0.2rem;">
-            <span>Release the escrow upon confirmation.</span>
-        </li>
-    </ul>
+    <a href="{{url}}"
+        class="btn"
+        style="margin-top: 32px; display: block;">
+        Open Trade
+    </a>
 
-    <p style="margin-top: 2rem;">Thank you for trading securely with {{platform}}.</p>
+    <p style="margin-top: 40px;">Thanks for choosing {{platform}} for your crypto trades.</p>
+
 
 </section>
 {{> footer}}

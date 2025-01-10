@@ -1,31 +1,34 @@
-import { model, Schema, Types } from 'mongoose';
+import { Document, model, Schema, Types } from 'mongoose';
 
-export type WalletType = {
-  name?: string;
-  escrow: number;
-  balance: number;
+export type WalletDocument = Document & {
+  name: string;
   publicKey: string;
   privateKey: string;
   _id: Types.ObjectId;
   user: Types.ObjectId;
-  network: string; // 'ethereum', 'solana', 'binance-smart-chain', 'bitcoin', etc.
+  mnemonicPhrase?: string;
+  network: string;
+  timestamp: Date;
 };
 
-const schema = new Schema<WalletType>({
+const schema = new Schema<WalletDocument>({
   name: { type: String, default: '' },
-  escrow: { type: Number, required: true, default: 0 },
   publicKey: { type: String, required: true, unique: true },
   privateKey: { type: String, required: true, unique: true },
+  mnemonicPhrase: { type: String },
   network: {
     type: String,
     required: true,
-    default: 'ethereum',
     lowercase: true,
   },
-  balance: { type: Number, default: 0 },
-  user: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'Users',
+    required: true,
+  },
+  timestamp: { type: Date, default: Date.now },
 });
 
-const Wallet = model<WalletType>('Wallets', schema);
+const Wallet = model<WalletDocument>('Wallets', schema);
 
 export default Wallet;

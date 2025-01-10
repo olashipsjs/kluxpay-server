@@ -2,5 +2,5 @@
   "watch": ["src"],
   "ext": "ts,html,css",
   "ignore": ["dist"],
-  "exec": "bun run copy:views && bun run tailwind && bun run compile && node ./dist/app.js"
+  "exec": "bun run copy:views && bun run tailwind && bun run compile && node ./dist/server.js"
 }

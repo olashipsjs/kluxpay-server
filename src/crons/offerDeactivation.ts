@@ -1,41 +1,64 @@
-import p2pContracts from '../constants/p2pContracts';
+import { getCoinsList } from '../apis/coins';
 import Offer from '../models/offer';
 import Wallet from '../models/wallet';
 import ethereumService from '../services/ethereumService';
+import cache from '../utils/cache';
+import handleError from '../utils/handleError';
 
 const offerDeactivation = async () => {
-  const offers = await Offer.find().populate('createdBy');
+  const offers = await Offer.find().populate([
+    { path: 'createdBy' },
+    { path: 'coin' },
+  ]);
 
   for (const offer of offers) {
-    for (const contract of p2pContracts) {
-      const wallets = await Wallet.find({
-        user: offer.createdBy._id,
-      });
+    const wallet = await Wallet.findOne({
+      user: offer.createdBy._id,
+      network: (offer as any).coin?.network,
+    });
 
-      for (const wallet of wallets) {
-        let balance;
+    try {
+      let balance: undefined | number = 0;
 
-        try {
-          switch (contract.network) {
-            case 'ethereum':
-              balance = await ethereumService.getContractBalance({
-                walletAddress: wallet.publicKey,
-                contractAddress: contract.address,
-              });
-          }
+      let coins: any[] = [];
 
-          if (balance === undefined || balance === null)
-            throw new Error('Unable to fetch asset balance.');
+      const cachedCoins = await cache.get(`${offer.fiat}-coins-${1}`);
 
-          if (balance > offer.amount) return;
+      if (cachedCoins) {
+        coins = JSON.parse(cachedCoins as string);
+      } else {
+        // Cache miss: Fetch data again
+        console.log('Cache miss. Fetching data...');
 
-          offer.isActive = false;
-          await offer.save();
-        } catch (error) {
-          console.error('An error occurred during offer activation:', error);
-          throw error;
-        }
+        await getCoinsList(1, offer.fiat);
+        coins = JSON.parse(
+          (await cache.get(`${offer.fiat}-coins-${1}`)) || '[]'
+        );
       }
+
+      const coin = coins.find((coin: any) => coin.id === Number(offer.coin));
+
+      if (wallet?.network === 'ethereum') {
+        balance = await ethereumService.getContractBalance({
+          walletAddress: wallet.publicKey,
+          contractAddress: coin?.platform?.token_address,
+        });
+      }
+
+      if (balance === undefined) {
+        balance = 0;
+      }
+
+      if (balance > offer.amount || offer.isActive === false) return;
+
+      offer.isActive = false;
+      await offer.save();
+
+      console.log(
+        `offer: ${offer._id} deactivated due to insufficient balance ${balance}`
+      );
+    } catch (error) {
+      handleError(error);
     }
   }
 };

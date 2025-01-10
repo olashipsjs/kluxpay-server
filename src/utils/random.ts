@@ -15,7 +15,7 @@ const random = {
   },
 
   string: (length: number = 64) => {
-    const randomString = randomBytes(length).toString('hex');
+    const randomString = randomBytes(64).toString('hex').substring(0, length);
 
     return randomString;
   },

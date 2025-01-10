@@ -11,7 +11,12 @@ import { expressMiddleware } from '@apollo/server/express4';
 import rateLimitMiddleware from './middlewares/rateLimitMiddleware';
 
 const server = http.createServer(app);
-io.attach(server);
+io.attach(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'UPDATE'],
+  },
+});
 
 const PORT = process.env.PORT || 5500;
 
@@ -27,7 +32,7 @@ const startServer = () => {
         graphqlUploadExpress({
           maxFiles: 10,
           overrideSendResponse: false,
-          maxFileSize: 1000 * 1000 * 10, // 10MB
+          maxFileSize: 10 * 1024 * 1024, // 10MB
         }),
         expressMiddleware(apolloServer, {
           context: async ({ req, res }) => {

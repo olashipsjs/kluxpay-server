@@ -8,7 +8,6 @@ import ethereumService from '../../services/ethereumService';
 import bearerAuthorization from '../../middlewares/bearerAuthorization';
 import Network from '../../models/network';
 import Transaction from '../../models/transaction';
-import rateLimit from 'express-rate-limit';
 
 const getWallet = async (userId: TradeDocument['_id']) => {
   const wallet = await Wallet.findOne({ user: userId });
@@ -26,24 +25,14 @@ const tradeResolver = {
       { req }: any
     ) => {
       try {
-        const loggedInUser = await bearerAuthorization(req);
+        await bearerAuthorization(req);
 
         const trade = await Trade.findOne({
           _id: tradeId,
-          createdBy: loggedInUser.id,
         });
 
         if (!trade) {
           throw new Error('Could not find trade');
-        }
-
-        const currentTime = Date.now();
-        const tradeTimestamp = new Date((trade as any).createdAt).getTime();
-        const offerDurationInMs = (trade as any).offer.timeout * 36000;
-
-        if (currentTime > tradeTimestamp + offerDurationInMs) {
-          trade.status = 'cancelled';
-          await trade.save();
         }
 
         return trade;
@@ -220,8 +209,7 @@ const tradeResolver = {
 
         const trade = await Trade.findOne({
           _id: tradeId,
-          createdBy: loggedInUser.id,
-          status: { $or: ['pending', 'paid'] },
+          status: { $in: ['pending', 'paid'] },
         }).populate([{ path: 'offer' }, { path: 'createdBy' }]);
 
         if (!trade) {
@@ -239,7 +227,7 @@ const tradeResolver = {
         const COIN = (offer as any).coin;
 
         const wallet = await getWallet(
-          offer.type === 'buy' ? trade.createdBy._id : offer.createdBy._id
+          offer.type !== 'buy' ? trade.createdBy._id : offer.createdBy._id
         );
 
         const network = await Network.findOne({ name: wallet.network });
@@ -250,7 +238,7 @@ const tradeResolver = {
 
         let tx;
 
-        const AMOUNT = trade.amount / trade.rate;
+        const AMOUNT = (trade.amount / trade.rate).toFixed(4);
 
         if (network.name === 'ethereum') {
           tx = await ethereumService.send({
@@ -294,12 +282,11 @@ const tradeResolver = {
       { req }: any
     ) => {
       try {
-        const loggedInUser = await bearerAuthorization(req);
+        await bearerAuthorization(req);
 
         const trade = await Trade.findOne({
           _id: tradeId,
-          createdBy: loggedInUser.id,
-          status: { $or: ['pending', 'paid'] },
+          status: { $in: ['pending', 'paid'] },
         }).populate([{ path: 'offer' }, { path: 'createdBy' }]);
 
         if (!trade) {
@@ -333,7 +320,7 @@ const tradeResolver = {
         if (network.name === 'ethereum') {
           tx = await ethereumService.send({
             contractAddress: COIN.contractAddress,
-            amount: String((AMOUNT + FEE).toFixed(2)),
+            amount: String((AMOUNT + FEE).toFixed(4)),
             to: wallet.publicKey,
             signingKey: aws256gsm.decrypt(
               process.env.ESCROW_ETHEREUM_PRIVATE_KEY!

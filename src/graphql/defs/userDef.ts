@@ -10,7 +10,7 @@ const userDef = `#graphql
         email: String!
         isLocked: Boolean!
         isOnline: Boolean!
-        lastActive: Boolean!
+        lastActive: Date!
         isVerified: Boolean!
         referrer: User
         isEmailVerified: Boolean!

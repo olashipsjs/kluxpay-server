@@ -16,7 +16,7 @@ const schema = new Schema<MessageDocument>(
     status: {
       type: String,
       required: true,
-      default: 'pending',
+      default: 'sent',
       enum: ['sent', 'pending'],
     },
   },

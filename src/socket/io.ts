@@ -13,7 +13,7 @@ const io = new Server({
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
-  socket.on('online', async (userId: string) => {
+  socket.on('online', async ({ userId }) => {
     socket.data.userId = userId;
 
     try {
@@ -21,7 +21,7 @@ io.on('connection', (socket) => {
         isOnline: true,
         lastActive: Date.now(),
       });
-      io.emit('user-status-updated', { userId, isOnline: true });
+      io.emit('online', { userId, isOnline: true });
     } catch (error) {
       handleError(error);
     }
@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('sendMessage', async ({ userId, tradeId, text }, cb) => {
+  socket.on('message', async ({ userId, tradeId, text }, cb) => {
     try {
       const message = new Message({ text, sender: userId, trade: tradeId });
       await message.save();
